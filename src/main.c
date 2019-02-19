@@ -4,7 +4,7 @@
 #include "lcd.h"
 #include "led.h"
 #include "avr/interrupt.h"
-
+#include "parser.h"
 
 
 
@@ -27,9 +27,13 @@ int main() {
     init();
 
 
+
+    uart_puts("init done!");
+
     lcd_gotoxy(0,0);
-    lcd_puts("init done!");
-    uart_putsln("init done!");
+    lcd_puts("line 0: init done!");
+    lcd_gotoxy(0,1);
+    lcd_puts("line 1: init done!");
 
     sei();
 
@@ -37,6 +41,7 @@ int main() {
 
         if( uart_is_complete() ) {
             uart_read_buffer(uart_buffer);
+            interprete(uart_buffer);
         }
 
 
