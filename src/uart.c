@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <avr/interrupt.h>
 #include "lcd.h"
+#include <string.h>
 
 
 #ifndef F_CPU
@@ -24,11 +25,20 @@
 
 
 
-#define UART_MAXSTRLEN 18
 
-volatile uint8_t uart_str_complete = 0;     // 1 .. String komplett empfangen
-volatile uint8_t uart_str_count = 0;
-volatile char uart_string[UART_MAXSTRLEN + 1] = "";
+
+
+#define CR   "\r"
+#define CRLF "\r\n"
+#define NEWLINE CR
+
+
+volatile uint8_t g_buffer_complete = 0;     // 1 .. String komplett empfangen
+volatile uint8_t g_buffer_index = 0;
+volatile char g_buffer[UART_BUFFER_SIZE] = "";
+
+
+
 
 
 #define BAUD 9600UL      // Target Baudrate
@@ -120,60 +130,55 @@ void uart_puts(char *s) {
  ******************************************************************************/
 void uart_putsln(char *s) {
     uart_puts(s);
-    uart_putc('\r');
+    uart_puts(NEWLINE);
 }
 
+
+
+
+static void handle_received_char(unsigned char c) {
+
+    if( c == '\b' && g_buffer_index > 0 ) {
+        g_buffer_index--;
+        uart_puts("\b \b");
+    }
+    else if( c != '\r' &&
+             c != '\n' &&
+             g_buffer_index < UART_BUFFER_SIZE-1 ) {
+
+        g_buffer[g_buffer_index] = c;
+        g_buffer_index++;
+
+        uart_putc(c);
+    }
+    else {
+        g_buffer[g_buffer_index] = '\0';
+        g_buffer_index = 0;
+        g_buffer_complete = 1;
+
+        uart_putsln("");
+    }
+
+}
+
+uint8_t uart_is_complete() {
+    return g_buffer_complete;
+}
+
+void uart_read_buffer(char *buffer) {
+    memcpy(buffer, (void*)g_buffer, UART_BUFFER_SIZE);
+
+    g_buffer_complete = 0;
+}
 
 ISR(USART_RX_vect)
 {
 
-  unsigned char nextChar;
+    unsigned char c = UDR0;
 
-
-  nextChar = UDR0;
-
-  if( uart_str_complete == 0 ) {
-
-      if( nextChar == '\b' && uart_str_count > 0) {
-          uart_str_count--;
-          uart_puts("\b \b");
-      }
-    else if( nextChar != '\r' && uart_str_count < UART_MAXSTRLEN ) {
-      uart_string[uart_str_count] = nextChar;
-      uart_str_count++;
-
-      uart_putc(nextChar);
+    if(!g_buffer_complete) {
+        handle_received_char(c);
     }
-    else {
-        uart_string[uart_str_count] = '\0';
-        uart_str_count = 0;
-        uart_str_complete = 1;
-
-        uart_putc('\r');
-        uart_putc('\n');
-        uart_str_complete = 0;
-
-
-
-        if( uart_string[0] == '0') {
-            lcd_gotoxy(0,0);
-            lcd_puts("                ");
-            lcd_gotoxy(0,0);
-        }
-        else {
-            lcd_gotoxy(0,1);
-            lcd_puts("                ");
-            lcd_gotoxy(0,1);
-        }
-
-        //const char *p_str = (const char*)uart_string;
-
-        lcd_puts(uart_string+2);
-
-
-    }
-  }
-
 
 }
 

@@ -17,9 +17,13 @@
 #ifndef UART_H_
 #define UART_H_
 
+    #define UART_BUFFER_SIZE 18
+
     extern void uart_init();
     extern void uart_putc(char c);
     extern void uart_puts(char *s);
     extern void uart_putsln(char *s);
     extern void uart_puti(uint8_t i);
+    extern void uart_read_buffer(char *buffer);
+    extern uint8_t uart_is_complete();
 #endif

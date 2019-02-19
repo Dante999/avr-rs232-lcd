@@ -22,6 +22,8 @@ void init() {
 
 int main() {
 
+    char uart_buffer[UART_BUFFER_SIZE] = "";
+
     init();
 
 
@@ -32,10 +34,16 @@ int main() {
     sei();
 
     while(1) {
-        led_set_on();
-        _delay_ms(1000);
 
-        led_set_off();
-        _delay_ms(1000);
+        if( uart_is_complete() ) {
+            uart_read_buffer(uart_buffer);
+        }
+
+
+//        led_set_on();
+//        _delay_ms(1000);
+
+//        led_set_off();
+//        _delay_ms(1000);
     }
 }
