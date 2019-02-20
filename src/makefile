@@ -20,7 +20,7 @@ SOURCES  = main.c
 SOURCES += uart.c
 SOURCES += lcd.c
 SOURCES += led.c
-SOURCES += parser.c
+SOURCES += interpreter.c
 
 # Progammer
 PROGRAMMER=usbasp
