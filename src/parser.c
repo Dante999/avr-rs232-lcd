@@ -54,8 +54,25 @@ static void handle_cmd_clear(const char *command) {
     for( uint8_t i=0; i < LCD_DISP_LENGTH; i++) {
         lcd_putc(' ');
     }
-
 }
+
+static void handle_cmd_write(const char *command) {
+    uint8_t index_line = strlen(CMD_WRITE)+1;
+    uint8_t index_content = index_line+2;
+
+    if( command[index_line] == '0' ) {
+        lcd_gotoxy(0,0);
+    }
+    else if( command[index_line] == '1' ) {
+        lcd_gotoxy(0, 1);
+    }
+
+    const char *value = &command[index_content];
+
+    lcd_puts(value);
+}
+
+
 void interprete(const char *command) {
 
 
@@ -64,6 +81,12 @@ void interprete(const char *command) {
     }
     else if( is_command(command, CMD_CLEAR)) {
         handle_cmd_clear(command);
+    }
+    else if( is_command(command, CMD_WRITE)) {
+        handle_cmd_write(command);
+    }
+    else {
+        uart_putsln(">unknown command!");
     }
 
 }
