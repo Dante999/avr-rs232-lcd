@@ -7,33 +7,29 @@
 #include "interpreter.h"
 
 
-
+/**
+ * @brief initializes all modules
+ */
 void init() {
-
     led_init();
     uart_init();
     lcd_init(LCD_DISP_ON);
     lcd_clrscr();
-
 }
 
-
-
-
+/**
+ * @brief the main function
+ *
+ * @return zero when exiting
+ */
 int main() {
 
     char uart_buffer[UART_BUFFER_SIZE] = "";
 
     init();
 
-
-
     uart_puts("init done!");
 
-    lcd_gotoxy(0,0);
-    lcd_puts("line 0: init done!");
-    lcd_gotoxy(0,1);
-    lcd_puts("line 1: init done!");
 
     sei();
 
@@ -44,11 +40,7 @@ int main() {
             interprete(uart_buffer);
         }
 
-
-//        led_set_on();
-//        _delay_ms(1000);
-
-//        led_set_off();
-//        _delay_ms(1000);
     }
+
+    return 0;
 }
