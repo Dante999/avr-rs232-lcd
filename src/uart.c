@@ -27,7 +27,6 @@
 
 
 
-
 #define CR   "\r"
 #define CRLF "\r\n"
 #define NEWLINE CR

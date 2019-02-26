@@ -1,14 +1,23 @@
+/*******************************************************************************
+ *
+ * File    : interpreter.c
+ *
+ * Author  : Dante999
+ * Date    : 26.02.2019
+ *
+ * Tabsize : 4
+ * License : GNU GPL v2
+ *
+ * this module interprets commands which were entered through the uart from the
+ * user
+ *
+ ******************************************************************************/
 #include <avr/io.h>
 #include <string.h>
 #include "led.h"
 #include "uart.h"
 #include "lcd.h"
-/**
- * commands:
- * -write (0|1) <string>
- * -clear (0|1)
- * -led (0|1)
-**/
+
 
 #define CMD_GOTOXY      "gotoxy"
 #define CMD_CLEARSCREEN "clearscreen"
@@ -18,22 +27,35 @@
 #define CMD_HELP        "help"
 
 
-#define RESPONSE_OK "-> OK"
 
 static uint8_t current_lcd_line = 0;
 
 
-
-static uint8_t response_ok() {
+/**
+ * @brief indicates the user that the entered command was ok
+ */
+static void response_ok() {
     uart_putsln("-> OK");
 }
 
-static uint8_t response_error(char *s) {
+/**
+ * @brief inidcates the user that the entered command was not correct
+ *
+ * @param s     additional information what went wrong during execution
+ */
+static void response_error(char *s) {
     uart_puts("-> ERROR: ");
     uart_putsln(s);
 }
 
 
+/**
+ * @brief converts a ascii-char digit to an integer
+ *
+ * @param c     the digit as ascii
+ *
+ * @return the digit as integer
+ */
 static int8_t char_to_int(char c) {
 
     if( '0' <= c && c <= '9' ) {
@@ -45,6 +67,14 @@ static int8_t char_to_int(char c) {
 
 }
 
+
+/**
+ * @brief converts a positive 2-digit-number from string to integer
+ *
+ * @param s     the 2-digit-number as string
+ *
+ * @return if the conversion succeed, a positive number or zero, otherwise -1
+ */
 static int8_t string_to_int(const char *s) {
 
     if( strlen(s) == 1 ) {
@@ -64,9 +94,19 @@ static int8_t string_to_int(const char *s) {
 
 }
 
-static uint8_t starts_with_command(const char *buffer, const char *cmd) {
 
-    if( strncmp(buffer, cmd, strlen(cmd)) == 0 ) {
+/**
+ * @brief checks if the given content starts with the given command
+ *
+ * @param content   the content which needs to be checked
+ * @param cmd       the expected command which is at the beginning
+ *
+ * @return 1 -> the content starts with the given commmand
+ *         0 -> the content does not start with the given command
+ */
+static uint8_t starts_with_command(const char *content, const char *cmd) {
+
+    if( strncmp(content, cmd, strlen(cmd)) == 0 ) {
         return 1;
     }
     else {
@@ -78,7 +118,7 @@ static uint8_t starts_with_command(const char *buffer, const char *cmd) {
 /**
  * @brief handles the led command
  *
- * @param s     the user input
+ * @param s     the complete entered user input
  */
 static void handle_led(const char *s) {
     uint8_t value_index = strlen(CMD_LED)+1;
@@ -109,6 +149,10 @@ static void handle_clearscreen(void) {
     response_ok();
 }
 
+
+/**
+ * @brief handles the clearline command
+ */
 static void handle_clearline(void) {
     lcd_gotoxy(0, current_lcd_line);
 
@@ -122,7 +166,11 @@ static void handle_clearline(void) {
 }
 
 
-// goto 12 1
+/**
+ * @brief handles the gotoxy command
+ *
+ * @param s     the complete entered user input
+ */
 static void handle_gotoxy(const char *s) {
 
     char x_value[3] = "";
@@ -150,6 +198,11 @@ static void handle_gotoxy(const char *s) {
 }
 
 
+/**
+ * @brief handle the write to lcd command
+ *
+ * @param s     the complete entered user input
+ */
 static void handle_write(const char *s) {
     uint8_t index_content = strlen(CMD_WRITE)+1;
 
@@ -160,6 +213,10 @@ static void handle_write(const char *s) {
     response_ok();
 }
 
+
+/**
+ * @brief handles the help command
+ */
 static void handle_help(void) {
     uart_putsln("List of available commands");
     uart_putsln("--------------------------");
@@ -173,6 +230,11 @@ static void handle_help(void) {
 }
 
 
+/**
+ * @brief interpretes the user input and decides what to do
+ *
+ * @param content   the complete content what the user has entered
+ */
 void interprete(const char *content) {
 
     if( starts_with_command(content, CMD_HELP) ) {
