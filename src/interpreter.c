@@ -15,13 +15,23 @@
 #define CMD_CLEARLINE   "clearline"
 #define CMD_WRITE       "write"
 #define CMD_LED         "led"
-
+#define CMD_HELP        "help"
 
 
 #define RESPONSE_OK "-> OK"
 
 static uint8_t current_lcd_line = 0;
 
+
+
+static uint8_t response_ok() {
+    uart_putsln("-> OK");
+}
+
+static uint8_t response_error(char *s) {
+    uart_puts("-> ERROR: ");
+    uart_putsln(s);
+}
 
 
 static int8_t char_to_int(char c) {
@@ -54,7 +64,7 @@ static int8_t string_to_int(const char *s) {
 
 }
 
-static uint8_t is_command(const char *buffer, const char *cmd) {
+static uint8_t starts_with_command(const char *buffer, const char *cmd) {
 
     if( strncmp(buffer, cmd, strlen(cmd)) == 0 ) {
         return 1;
@@ -86,7 +96,7 @@ static void handle_led(const char *s) {
         return;
     }
 
-    uart_putsln(RESPONSE_OK);
+    response_ok();
 }
 
 
@@ -96,7 +106,7 @@ static void handle_led(const char *s) {
 static void handle_clearscreen(void) {
     lcd_clrscr();
     lcd_gotoxy(0,0);
-    uart_putsln(RESPONSE_OK);
+    response_ok();
 }
 
 static void handle_clearline(void) {
@@ -107,8 +117,8 @@ static void handle_clearline(void) {
     }
 
     lcd_gotoxy(0, current_lcd_line);
-    uart_putsln(RESPONSE_OK);
 
+    response_ok();
 }
 
 
@@ -136,7 +146,7 @@ static void handle_gotoxy(const char *s) {
     lcd_gotoxy(x, y);
     current_lcd_line = y;
 
-    uart_putsln(RESPONSE_OK);
+    response_ok();
 }
 
 
@@ -147,30 +157,44 @@ static void handle_write(const char *s) {
 
     lcd_puts(value);
 
-    uart_putsln(RESPONSE_OK);
+    response_ok();
+}
+
+static void handle_help(void) {
+    uart_putsln("List of available commands");
+    uart_putsln("--------------------------");
+    uart_putsln("help                   prints this help screen");
+    uart_putsln("led <0|1>              turns the onboard led on or off");
+    uart_putsln("clearscreen            clears the complete lcd");
+    uart_putsln("gotoxy <0-15> <0-1>    go's to the given coordinates on the lcd");
+    uart_putsln("clearline              clears the current line where the cursor is located");
+    uart_putsln("write <content>        writes the given content to the current position");
+    uart_putsln("--------------------------");
 }
 
 
-void interprete(const char *received_content) {
+void interprete(const char *content) {
 
-
-    if( is_command(received_content, CMD_LED) ) {
-        handle_led(received_content);
+    if( starts_with_command(content, CMD_HELP) ) {
+        handle_help();
     }
-    else if( is_command(received_content, CMD_CLEARSCREEN)) {
+    else if( starts_with_command(content, CMD_LED) ) {
+        handle_led(content);
+    }
+    else if( starts_with_command(content, CMD_CLEARSCREEN)) {
         handle_clearscreen();
     }
-    else if( is_command(received_content, CMD_GOTOXY)) {
-        handle_gotoxy(received_content);
+    else if( starts_with_command(content, CMD_GOTOXY)) {
+        handle_gotoxy(content);
     }
-    else if( is_command(received_content, CMD_CLEARLINE)) {
+    else if( starts_with_command(content, CMD_CLEARLINE)) {
         handle_clearline();
     }
-    else if( is_command(received_content, CMD_WRITE)) {
-        handle_write(received_content);
+    else if( starts_with_command(content, CMD_WRITE)) {
+        handle_write(content);
     }
     else {
-        uart_putsln("->unknown command!");
+        response_error("unkown command! type help to see a list of commands!");
     }
 
 }

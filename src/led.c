@@ -17,3 +17,7 @@ void led_set_on() {
 void led_set_off() {
     LED_REG_PORT &= ~(1<<LED_BIT);
 }
+
+void led_toggle() {
+    LED_REG_PORT ^= (1<<LED_BIT);
+}

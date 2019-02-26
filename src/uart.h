@@ -17,7 +17,7 @@
 #ifndef UART_H_
 #define UART_H_
 
-    #define UART_BUFFER_SIZE 18
+    #define UART_BUFFER_SIZE 50
 
     extern void uart_init();
     extern void uart_putc(char c);
