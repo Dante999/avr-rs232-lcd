@@ -5,17 +5,23 @@
 #include "led.h"
 #include "avr/interrupt.h"
 #include "interpreter.h"
+#include "timer0.h"
+
+#define PRESCALER 64
 
 
 /**
  * @brief initializes all modules
  */
 void init() {
+
     led_init();
     uart_init();
+
     lcd_init(LCD_DISP_ON);
     lcd_clrscr();
 }
+
 
 /**
  * @brief the main function
@@ -29,7 +35,7 @@ int main() {
     init();
 
     uart_puts("init done!");
-
+    lcd_puts("Ready!");
 
     sei();
 

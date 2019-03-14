@@ -115,24 +115,86 @@ static uint8_t starts_with_command(const char *content, const char *cmd) {
 }
 
 
+
+
+static int8_t stoui(const char *s, uint8_t *i) {
+
+    int8_t digits[3];
+    size_t len = strlen(s);
+
+    if( len == 1 ) {
+        digits[2] = 0;
+        digits[1] = 0;
+        digits[0] = char_to_int(s[0]);
+    }
+    else if( len == 2 ) {
+        digits[2] = 0;
+        digits[1] = char_to_int(s[0]);
+        digits[0] = char_to_int(s[1]);
+    }
+    else if( len == 3 ) {
+        digits[2] = char_to_int(s[0]);
+        digits[1] = char_to_int(s[1]);
+        digits[0] = char_to_int(s[2]);
+    }
+    else {
+        return -2;
+    }
+
+
+    if( digits[0] < 0 || 9 < digits[0] ||
+        digits[1] < 0 || 9 < digits[1] ||
+        digits[2] < 0 || 2 < digits[2] ) {
+        return -1;
+    }
+    else {
+
+        *i  = digits[0] * 1;
+        *i += digits[1] * 10;
+        *i += digits[2] * 100;
+
+        return 0;
+    }
+}
+
 /**
  * @brief handles the led command
  *
  * @param s     the complete entered user input
  */
 static void handle_led(const char *s) {
-    uint8_t value_index = strlen(CMD_LED)+1;
 
-    if( s[value_index] == '0' ) {
-        led_set_off();
+    char color[10];
+    char value[4];
+
+    memset(color, '\0', sizeof(color)/sizeof(color[0]));
+    memset(value, '\0', sizeof(value)/sizeof(value[0]));
+
+    char *pcolor = strchr(s,      ' ')+1;
+    char *pvalue = strchr(pcolor, ' ')+1;
+
+    strncpy(color, pcolor, (pvalue-pcolor)-1);
+    strncpy(value, pvalue, 3);
+
+
+    uint8_t pwm = 0;
+
+    if( stoui(value, &pwm) != 0 ) {
+        response_error("unknown value!");
+        return;
     }
-    else if( s[value_index] == '1'){
-        led_set_on();
+
+    if( strcmp(color, "green") == 0) {
+        led_green_pwm(pwm);
+    }
+    else if( strcmp(color, "yellow") == 0 ) {
+        led_yellow_pwm(pwm);
+    }
+    else if( strcmp(color, "red") == 0 ) {
+        led_red_pwm(pwm);
     }
     else {
-        uart_puts(">invalid value: ");
-        uart_putc(s[value_index]);
-        uart_putsln("");
+        response_error("unknown color!");
         return;
     }
 
@@ -220,12 +282,13 @@ static void handle_write(const char *s) {
 static void handle_help(void) {
     uart_putsln("List of available commands");
     uart_putsln("--------------------------");
-    uart_putsln("help                   prints this help screen");
-    uart_putsln("led <0|1>              turns the onboard led on or off");
-    uart_putsln("clearscreen            clears the complete lcd");
-    uart_putsln("gotoxy <0-15> <0-1>    go's to the given coordinates on the lcd");
-    uart_putsln("clearline              clears the current line where the cursor is located");
-    uart_putsln("write <content>        writes the given content to the current position");
+    uart_putsln("help                  prints this help screen");
+    uart_putsln("led <color> <0-255>   sets the brightness of the given");
+    uart_putsln("                      led color (red|yellow|green)");
+    uart_putsln("clearscreen           clears the complete lcd");
+    uart_putsln("gotoxy <0-15> <0-1>   go's to the given coordinates on the lcd");
+    uart_putsln("clearline             clears the current line where the cursor is located");
+    uart_putsln("write <content>       writes the given content to the current position");
     uart_putsln("--------------------------");
 }
 

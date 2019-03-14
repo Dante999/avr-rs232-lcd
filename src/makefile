@@ -21,6 +21,8 @@ SOURCES += uart.c
 SOURCES += lcd.c
 SOURCES += led.c
 SOURCES += interpreter.c
+SOURCES += timer0.c
+SOURCES += timer2.c
 
 # Progammer
 PROGRAMMER=usbasp
@@ -28,24 +30,24 @@ PROGRAMMER=usbasp
 #BAUD=-B9600
 
 OBJECTS=$(SOURCES:%.c=$(BUILDPATH)/%.o)
-CFLAGS  = -c
-CFLAGS += -Os
-CFLAGS += -Wall
-CFLAGS += -fpack-struct
-CFLAGS += -fshort-enums
-CFLAGS += -ffunction-sections
-CFLAGS += -fdata-sections
-CFLAGS += -std=gnu99
-CFLAGS += -funsigned-char
-CFLAGS += -funsigned-bitfields
-CFLAGS += -DF_CPU=$(F_CPU)UL
-LDFLAGS=
+	CFLAGS  = -c
+	CFLAGS += -Os
+	CFLAGS += -Wall
+	CFLAGS += -fpack-struct
+	CFLAGS += -fshort-enums
+	CFLAGS += -ffunction-sections
+	CFLAGS += -fdata-sections
+	CFLAGS += -std=gnu99
+	CFLAGS += -funsigned-char
+	CFLAGS += -funsigned-bitfields
+	CFLAGS += -DF_CPU=$(F_CPU)UL
+	LDFLAGS=
 
 
 
 all: clean hex eeprom flash_hex
 
-list_targets: 
+list_targets:
 	avr-gcc --target-help
 
 hex: $(TARGET).hex size
@@ -72,7 +74,7 @@ size:
 
 flash_hex:
 	avrdude -p $(MCU) $(PORT) $(BAUD) -c $(PROGRAMMER) -U flash:w:$(BUILDPATH)/$(TARGET).hex:a
-#	micronucleus --run $(BUILDPATH)/$(TARGET).hex
+	#	micronucleus --run $(BUILDPATH)/$(TARGET).hex
 
 read_fuses:
 	avrdude -p $(MCU) $(PORT) $(BAUD) -c $(PROGRAMMER) -U lfuse:r:-:i
