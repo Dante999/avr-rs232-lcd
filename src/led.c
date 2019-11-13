@@ -49,7 +49,7 @@ void led_init()
  *
  * @return  none
  ******************************************************************************/
-void led_set_on() { LED_REG_PORT |= (1 << LED_BIT); }
+void led_on() { LED_REG_PORT |= (1 << LED_BIT); }
 
 /*******************************************************************************
  * turns the onboard led off
@@ -58,7 +58,7 @@ void led_set_on() { LED_REG_PORT |= (1 << LED_BIT); }
  *
  * @return  none
  ******************************************************************************/
-void led_set_off() { LED_REG_PORT &= ~(1 << LED_BIT); }
+void led_off() { LED_REG_PORT &= ~(1 << LED_BIT); }
 
 /*******************************************************************************
  * toggles the onboard led between on/off each function call

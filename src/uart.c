@@ -5,7 +5,7 @@
  * Author  : Dante999
  * Date    : 28.12.2018
  *
- * Tabsize : 4
+ * Tabsize : 8
  * License : GNU GPL v2
  *
  * writes to the uart serial interface
@@ -27,7 +27,6 @@
 #define NEWLINE CR
 
 volatile uint8_t g_buffer_complete          = 0;
-volatile uint8_t g_buffer_index             = 0;
 volatile char    g_buffer[UART_BUFFER_SIZE] = "";
 
 #define BAUD 9600UL // Target Baudrate
@@ -123,43 +122,71 @@ void uart_putsln(char *s)
 	uart_puts(NEWLINE);
 }
 
+/*******************************************************************************
+ * handles a single received character
+ *
+ * @param   c   the received character
+ *
+ * @return  none
+ ******************************************************************************/
 static void handle_received_char(unsigned char c)
 {
+	static uint8_t index = 0;
 
-	if (c == '\b' && g_buffer_index > 0) {
-		g_buffer_index--;
+	if (c == '\b' && index > 0) {
+		index--;
 		uart_puts("\b \b");
 	}
-	else if (c != '\r' && c != '\n' &&
-		 g_buffer_index < UART_BUFFER_SIZE - 1) {
+	else if (c != '\r' && c != '\n' && index < (UART_BUFFER_SIZE - 1)) {
 
-		g_buffer[g_buffer_index] = c;
-		g_buffer_index++;
+		g_buffer[index] = c;
+		index++;
 
 		uart_putc(c);
 	}
 	else {
-		g_buffer[g_buffer_index] = '\0';
+		g_buffer[index] = '\0';
 
-		g_buffer_index    = 0;
+		index = 0;
+
 		g_buffer_complete = 1;
 
 		uart_putsln("");
 	}
 }
 
+/*******************************************************************************
+ * returns if the uart transmission is complete
+ *
+ * @param   none
+ *
+ * @return  1 if the transmission is completed, otherwise 0
+ ******************************************************************************/
 uint8_t uart_is_complete() { return g_buffer_complete; }
 
-void uart_read_buffer(char *buffer)
+/*******************************************************************************
+ * copies the uart buffer content to the given address
+ *
+ * @param   *buffer   pointer to the copy target
+ *
+ * @return  none
+ ******************************************************************************/
+void uart_copy_buffer(char *buffer)
 {
 	memcpy(buffer, (void *)g_buffer, UART_BUFFER_SIZE);
 
 	g_buffer_complete = 0;
 }
 
+/*******************************************************************************
+ * interrupt when a single char is received through UART
+ *
+ * @param   none
+ *
+ * @return  none
+ ******************************************************************************/
 ISR(USART_RX_vect)
 {
-
 	unsigned char c = UDR0;
 
 	if (!g_buffer_complete) {

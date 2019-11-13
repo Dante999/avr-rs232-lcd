@@ -46,7 +46,7 @@ int main()
 	while (1) {
 
 		if (uart_is_complete()) {
-			uart_read_buffer(uart_buffer);
+			uart_copy_buffer(uart_buffer);
 			interprete(uart_buffer);
 		}
 	}

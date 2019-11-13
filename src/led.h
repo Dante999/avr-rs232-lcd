@@ -4,8 +4,8 @@
 #include <avr/io.h>
 
 void led_init();
-void led_set_on();
-void led_set_off();
+void led_on();
+void led_off();
 void led_toggle();
 
 void led_red_pwm(uint8_t power);

@@ -1,29 +1,30 @@
 /*******************************************************************************
- * 
+ *
  * File    : uart.h
  *
  * Author  : Dante999
  * Date    : 28.12.2018
- * 
+ *
  * Tabsize : 4
  * License : GNU GPL v2
- * 
+ *
  * writes to the uart serial interface
  *
- * 
+ *
  ******************************************************************************/
+#ifndef UART_H
+#define UART_H
+
 #include <avr/io.h>
 
-#ifndef UART_H_
-#define UART_H_
+#define UART_BUFFER_SIZE 50
 
-    #define UART_BUFFER_SIZE 50
+void    uart_init();
+void    uart_putc(char c);
+void    uart_puts(char *s);
+void    uart_putsln(char *s);
+void    uart_puti(uint8_t i);
+void    uart_copy_buffer(char *buffer);
+uint8_t uart_is_complete();
 
-    extern void uart_init();
-    extern void uart_putc(char c);
-    extern void uart_puts(char *s);
-    extern void uart_putsln(char *s);
-    extern void uart_puti(uint8_t i);
-    extern void uart_read_buffer(char *buffer);
-    extern uint8_t uart_is_complete();
-#endif
+#endif // UART_H
